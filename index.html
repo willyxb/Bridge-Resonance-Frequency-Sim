@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Bridge Resonance Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header Section -->
+        <header class="header panel">
+            <h1>Bridge Resonance & Structural Failure</h1>
+            <p>An interactive AP Physics 1 model demonstrating driven damped harmonic motion, energy transfer, and catastrophic structural failure.</p>
+        </header>
+
+        <!-- Visualization Section -->
+        <section class="visualization panel">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="bridgeCanvas"></canvas>
+                <div id="failureOverlay" class="hidden">
+                    <h2>STRUCTURAL FAILURE</h2>
+                    <p>Critical amplitude exceeded.</p>
+                    <button id="btnResetFailure">Rebuild Bridge</button>
+                </div>
+            </div>
+            
+            <div class="instructions-panel">
+                <div class="instruction-col">
+                    <h3>🎯 Finding Resonance</h3>
+                    <ol>
+                        <li>Note the <strong>Natural Frequency</strong> displayed in the stats box (e.g., <code>1.00 Hz</code>).</li>
+                        <li>Adjust the <strong>Forcing Frequency</strong> slider to match this value.</li>
+                        <li>Click <strong>Start</strong> and watch the bridge's displacement amplitude grow to its peak.</li>
+                    </ol>
+                </div>
+                <div class="instruction-col">
+                    <h3>⚙️ Manipulation Guide</h3>
+                    <ul>
+                        <li><strong>Alter Resonance:</strong> Adjust <strong>Mass</strong> (m) or <strong>Stiffness</strong> (k) to shift the natural frequency: <code>f<sub>n</sub> = <sup>1</sup>/<sub>2&pi;</sub>&radic;(k/m)</code>.</li>
+                        <li><strong>Control Energy:</strong> Reduce or disable <strong>Damping</strong> to allow the oscillations to grow much larger.</li>
+                        <li><strong>Automate:</strong> Run a <strong>Frequency Sweep</strong> to map out the amplitude peak across the spectrum.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls Section -->
+        <section class="controls panel">
+            <h2>Simulation Controls</h2>
+            
+            <div class="control-group tooltip" data-tooltip="Frequency of the external periodic driving force">
+                <label for="slideForcingFreq">Forcing Frequency (<span id="valForcingFreq">1.0</span> Hz)</label>
+                <input type="range" id="slideForcingFreq" min="0.1" max="3.0" step="0.05" value="1.0">
+            </div>
+
+            <div class="control-group tooltip" data-tooltip="Amplitude of the external driving force">
+                <label for="slideForceAmp">Force Amplitude (<span id="valForceAmp">500</span> N)</label>
+                <input type="range" id="slideForceAmp" min="0" max="2000" step="50" value="500">
+            </div>
+
+            <div class="control-group tooltip" data-tooltip="Damping coefficient 'c' - Energy lost to friction/air resistance">
+                <label for="slideDamping">Damping Coefficient (<span id="valDamping">20</span> kg/s)</label>
+                <input type="range" id="slideDamping" min="0" max="200" step="2" value="20">
+            </div>
+
+            <div class="control-group tooltip" data-tooltip="Mass of the bridge deck">
+                <label for="slideMass">Bridge Mass (<span id="valMass">1000</span> kg)</label>
+                <input type="range" id="slideMass" min="500" max="5000" step="100" value="1000">
+            </div>
+
+            <div class="control-group tooltip" data-tooltip="Stiffness 'k' - Resistance to deformation">
+                <label for="slideStiffness">Stiffness / Spring Constant (<span id="valStiffness">40000</span> N/m)</label>
+                <input type="range" id="slideStiffness" min="10000" max="100000" step="1000" value="40000">
+            </div>
+
+            <div class="button-group">
+                <button id="btnToggleSim" class="btn primary">Start</button>
+                <button id="btnResetSim" class="btn secondary">Reset</button>
+            </div>
+            
+            <div class="button-group">
+                <button id="btnToggleDamping" class="btn outline">Toggle Damping</button>
+                <button id="btnToggleWind" class="btn outline">Wind Noise: OFF</button>
+            </div>
+
+            <div class="advanced-controls">
+                <h3>Presets & Automation</h3>
+                <button id="btnTacoma" class="btn warning tooltip" data-tooltip="Loads parameters prone to resonance, similar to the conditions of the Tacoma Narrows Bridge collapse">Tacoma Narrows Preset</button>
+                <button id="btnSweep" class="btn primary tooltip" data-tooltip="Automatically sweeps frequencies to graph the resonance curve">Run Frequency Sweep</button>
+                <div id="sweepProgress" class="hidden">Sweeping: <span id="sweepStatus">0%</span></div>
+            </div>
+            
+            <div class="stats-box">
+                <p>Natural Frequency: <span id="statNatFreq">1.00</span> Hz</p>
+                <p>Current Amplitude: <span id="statAmp">0.00</span> m</p>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts panel">
+            <div class="chart-container">
+                <h3>Displacement vs Time</h3>
+                <canvas id="timeChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Amplitude vs Forcing Frequency (Resonance Curve)</h3>
+                <canvas id="freqChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Educational Section -->
+        <section class="education panel">
+            <h2>Real-World Engineering</h2>
+            <div class="edu-grid">
+                <div class="edu-card">
+                    <h3>Tacoma Narrows Bridge (1940)</h3>
+                    <p>A classic example of aeroelastic flutter. Wind vortices provided a periodic forcing function near the bridge's torsional natural frequency, causing resonant oscillations that ultimately tore it apart.</p>
+                </div>
+                <div class="edu-card">
+                    <h3>Earthquake Resonance</h3>
+                    <p>Buildings act like inverted pendulums. If an earthquake's seismic waves match a building's natural frequency, devastating resonance occurs. Modern engineering aims to detune buildings from expected seismic frequencies.</p>
+                </div>
+                <div class="edu-card">
+                    <h3>Tuned Mass Dampers</h3>
+                    <p>Massive pendulums placed near the top of skyscrapers (like Taipei 101). They are tuned to oscillate out-of-phase with the building, absorbing kinetic energy and dramatically reducing sway.</p>
+                </div>
+                <div class="edu-card">
+                    <h3>Millennium Bridge</h3>
+                    <p>Initially suffered from synchronous lateral excitation. Pedestrians synchronized their steps to the bridge's slight sway, creating a positive feedback loop (resonance). Dampers were retrofitted to fix it.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="physics.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
