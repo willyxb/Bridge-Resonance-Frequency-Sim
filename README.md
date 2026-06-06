@@ -11,8 +11,13 @@ The project was designed to serve as an educational tool for students learning a
 
 Features:
 Interactive bridge vibration simulation
+
 Adjustable forcing frequency
+
 Adjustable damping effects
+
 Real-time visualization of oscillatory motion
+
 Demonstrates resonance and amplitude amplification
+
 Educational explanations of key physics concepts
