@@ -15,7 +15,6 @@
             <h1>Bridge Resonance & Structural Failure</h1>
             <p>An interactive AP Physics 1 model demonstrating driven damped harmonic motion, energy transfer, and catastrophic structural failure.</p>
         </header>
-
         <!-- Visualization Section -->
         <section class="visualization panel">
             <div class="canvas-container" id="canvasContainer">
@@ -27,26 +26,25 @@
                 </div>
             </div>
             
-            <div class="instructions-panel">
-                <div class="instruction-col">
-                    <h3>🎯 Finding Resonance</h3>
-                    <ol>
-                        <li>Note the <strong>Natural Frequency</strong> displayed in the stats box (e.g., <code>1.00 Hz</code>).</li>
-                        <li>Adjust the <strong>Forcing Frequency</strong> slider to match this value.</li>
-                        <li>Click <strong>Start</strong> and watch the bridge's displacement amplitude grow to its peak.</li>
-                    </ol>
+            <div class="energy-panel">
+                <h3>Energy Transfer</h3>
+                <div class="energy-bar-container tooltip" data-tooltip="Kinetic Energy: 1/2 mv² - Energy of motion">
+                    <span class="label">KE</span>
+                    <div class="bar-track"><div class="bar-fill ke-fill" id="barKE"></div></div>
+                    <span class="val" id="valKE">0 J</span>
                 </div>
-                <div class="instruction-col">
-                    <h3>⚙️ Manipulation Guide</h3>
-                    <ul>
-                        <li><strong>Alter Resonance:</strong> Adjust <strong>Mass</strong> (m) or <strong>Stiffness</strong> (k) to shift the natural frequency: <code>f<sub>n</sub> = <sup>1</sup>/<sub>2&pi;</sub>&radic;(k/m)</code>.</li>
-                        <li><strong>Control Energy:</strong> Reduce or disable <strong>Damping</strong> to allow the oscillations to grow much larger.</li>
-                        <li><strong>Automate:</strong> Run a <strong>Frequency Sweep</strong> to map out the amplitude peak across the spectrum.</li>
-                    </ul>
+                <div class="energy-bar-container tooltip" data-tooltip="Elastic Potential Energy: 1/2 kx² - Energy stored in bridge deformation">
+                    <span class="label">PE</span>
+                    <div class="bar-track"><div class="bar-fill pe-fill" id="barPE"></div></div>
+                    <span class="val" id="valPE">0 J</span>
+                </div>
+                <div class="energy-bar-container tooltip" data-tooltip="Total Mechanical Energy: KE + PE">
+                    <span class="label">Total</span>
+                    <div class="bar-track"><div class="bar-fill total-fill" id="barTotal"></div></div>
+                    <span class="val" id="valTotal">0 J</span>
                 </div>
             </div>
         </section>
-
         <!-- Controls Section -->
         <section class="controls panel">
             <h2>Simulation Controls</h2>
@@ -55,27 +53,22 @@
                 <label for="slideForcingFreq">Forcing Frequency (<span id="valForcingFreq">1.0</span> Hz)</label>
                 <input type="range" id="slideForcingFreq" min="0.1" max="3.0" step="0.05" value="1.0">
             </div>
-
             <div class="control-group tooltip" data-tooltip="Amplitude of the external driving force">
                 <label for="slideForceAmp">Force Amplitude (<span id="valForceAmp">500</span> N)</label>
                 <input type="range" id="slideForceAmp" min="0" max="2000" step="50" value="500">
             </div>
-
             <div class="control-group tooltip" data-tooltip="Damping coefficient 'c' - Energy lost to friction/air resistance">
                 <label for="slideDamping">Damping Coefficient (<span id="valDamping">20</span> kg/s)</label>
                 <input type="range" id="slideDamping" min="0" max="200" step="2" value="20">
             </div>
-
             <div class="control-group tooltip" data-tooltip="Mass of the bridge deck">
                 <label for="slideMass">Bridge Mass (<span id="valMass">1000</span> kg)</label>
                 <input type="range" id="slideMass" min="500" max="5000" step="100" value="1000">
             </div>
-
             <div class="control-group tooltip" data-tooltip="Stiffness 'k' - Resistance to deformation">
                 <label for="slideStiffness">Stiffness / Spring Constant (<span id="valStiffness">40000</span> N/m)</label>
                 <input type="range" id="slideStiffness" min="10000" max="100000" step="1000" value="40000">
             </div>
-
             <div class="button-group">
                 <button id="btnToggleSim" class="btn primary">Start</button>
                 <button id="btnResetSim" class="btn secondary">Reset</button>
@@ -85,7 +78,6 @@
                 <button id="btnToggleDamping" class="btn outline">Toggle Damping</button>
                 <button id="btnToggleWind" class="btn outline">Wind Noise: OFF</button>
             </div>
-
             <div class="advanced-controls">
                 <h3>Presets & Automation</h3>
                 <button id="btnTacoma" class="btn warning tooltip" data-tooltip="Loads parameters prone to resonance, similar to the conditions of the Tacoma Narrows Bridge collapse">Tacoma Narrows Preset</button>
@@ -98,7 +90,6 @@
                 <p>Current Amplitude: <span id="statAmp">0.00</span> m</p>
             </div>
         </section>
-
         <!-- Charts Section -->
         <section class="charts panel">
             <div class="chart-container">
@@ -110,7 +101,6 @@
                 <canvas id="freqChart"></canvas>
             </div>
         </section>
-
         <!-- Educational Section -->
         <section class="education panel">
             <h2>Real-World Engineering</h2>
@@ -134,7 +124,6 @@
             </div>
         </section>
     </div>
-
     <script src="physics.js"></script>
     <script src="app.js"></script>
 </body>
