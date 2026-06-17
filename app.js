@@ -1,34 +1,33 @@
 /**
  * UI Controller and Render Loop
  */
-
 const physics = new BridgePhysics();
-
 // DOM Elements
 const canvas = document.getElementById('bridgeCanvas');
 const ctx = canvas.getContext('2d');
 const failureOverlay = document.getElementById('failureOverlay');
-
 // Sliders
 const slideFreq = document.getElementById('slideForcingFreq');
 const slideAmp = document.getElementById('slideForceAmp');
 const slideDamping = document.getElementById('slideDamping');
 const slideMass = document.getElementById('slideMass');
 const slideStiff = document.getElementById('slideStiffness');
-
 // Values
 const valFreq = document.getElementById('valForcingFreq');
 const valAmp = document.getElementById('valForceAmp');
 const valDamping = document.getElementById('valDamping');
 const valMass = document.getElementById('valMass');
 const valStiff = document.getElementById('valStiffness');
-
 // Stats
 const statNatFreq = document.getElementById('statNatFreq');
 const statAmp = document.getElementById('statAmp');
-
-
-
+// Energy Bars
+const barKE = document.getElementById('barKE');
+const barPE = document.getElementById('barPE');
+const barTotal = document.getElementById('barTotal');
+const valKE = document.getElementById('valKE');
+const valPE = document.getElementById('valPE');
+const valTotal = document.getElementById('valTotal');
 // Buttons
 const btnToggleSim = document.getElementById('btnToggleSim');
 const btnResetSim = document.getElementById('btnResetSim');
@@ -37,11 +36,9 @@ const btnToggleWind = document.getElementById('btnToggleWind');
 const btnTacoma = document.getElementById('btnTacoma');
 const btnSweep = document.getElementById('btnSweep');
 const btnResetFailure = document.getElementById('btnResetFailure');
-
 // Sweep
 const sweepProgress = document.getElementById('sweepProgress');
 const sweepStatus = document.getElementById('sweepStatus');
-
 // State
 let isRunning = false;
 let isSweeping = false;
@@ -49,7 +46,7 @@ let animationId;
 let timeData = [];
 let ampData = [];
 let maxTimeHistory = 200; // frames
-
+const MAX_ENERGY_SCALE = 50000; // For scaling the energy bars
 // Resize Canvas
 function resizeCanvas() {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -58,11 +55,9 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-
 // Charts
 Chart.defaults.color = '#cbd5e1';
 Chart.defaults.font.family = 'Inter';
-
 const timeChartCtx = document.getElementById('timeChart').getContext('2d');
 const timeChart = new Chart(timeChartCtx, {
     type: 'line',
@@ -88,7 +83,6 @@ const timeChart = new Chart(timeChartCtx, {
         plugins: { legend: { display: false } }
     }
 });
-
 const freqChartCtx = document.getElementById('freqChart').getContext('2d');
 const freqChart = new Chart(freqChartCtx, {
     type: 'line',
@@ -114,7 +108,6 @@ const freqChart = new Chart(freqChartCtx, {
         plugins: { legend: { display: false } }
     }
 });
-
 // Update Physics Parameters from UI
 function updateParamsFromUI() {
     physics.f_force = parseFloat(slideFreq.value);
@@ -122,21 +115,17 @@ function updateParamsFromUI() {
     physics.c = parseFloat(slideDamping.value);
     physics.m = parseFloat(slideMass.value);
     physics.k = parseFloat(slideStiff.value);
-
     valFreq.innerText = physics.f_force.toFixed(2);
     valAmp.innerText = physics.F0;
     valDamping.innerText = physics.c;
     valMass.innerText = physics.m;
     valStiff.innerText = physics.k;
-
     statNatFreq.innerText = physics.getNaturalFrequency().toFixed(2);
 }
-
 // Add event listeners to sliders
 [slideFreq, slideAmp, slideDamping, slideMass, slideStiff].forEach(slider => {
     slider.addEventListener('input', updateParamsFromUI);
 });
-
 // Controls
 btnToggleSim.addEventListener('click', () => {
     if (isSweeping) return;
@@ -144,10 +133,8 @@ btnToggleSim.addEventListener('click', () => {
     btnToggleSim.innerText = isRunning ? 'Stop' : 'Start';
     btnToggleSim.className = isRunning ? 'btn warning' : 'btn primary';
 });
-
 btnResetSim.addEventListener('click', resetSimulation);
 btnResetFailure.addEventListener('click', resetSimulation);
-
 function resetSimulation() {
     physics.reset();
     timeChart.data.datasets[0].data.fill(0);
@@ -167,21 +154,18 @@ function resetSimulation() {
     freqChart.data.datasets[0].data = [];
     freqChart.update();
 }
-
 btnToggleDamping.addEventListener('click', () => {
     physics.dampingEnabled = !physics.dampingEnabled;
     btnToggleDamping.innerText = physics.dampingEnabled ? 'Toggle Damping' : 'Damping: OFF';
     btnToggleDamping.style.color = physics.dampingEnabled ? '' : 'var(--accent-red)';
     btnToggleDamping.style.borderColor = physics.dampingEnabled ? '' : 'var(--accent-red)';
 });
-
 btnToggleWind.addEventListener('click', () => {
     physics.windNoiseEnabled = !physics.windNoiseEnabled;
     btnToggleWind.innerText = physics.windNoiseEnabled ? 'Wind Noise: ON' : 'Wind Noise: OFF';
     btnToggleWind.style.color = physics.windNoiseEnabled ? 'var(--accent-blue)' : '';
     btnToggleWind.style.borderColor = physics.windNoiseEnabled ? 'var(--accent-blue)' : '';
 });
-
 btnTacoma.addEventListener('click', () => {
     slideMass.value = 2000;
     slideStiff.value = 20000;
@@ -204,7 +188,6 @@ btnTacoma.addEventListener('click', () => {
     btnToggleSim.innerText = 'Stop';
     btnToggleSim.className = 'btn warning';
 });
-
 // Automated Frequency Sweep
 btnSweep.addEventListener('click', () => {
     if (isSweeping) return;
@@ -270,19 +253,16 @@ btnSweep.addEventListener('click', () => {
     
     runSweepStep();
 });
-
 function disableUI() {
     slideFreq.disabled = true; slideAmp.disabled = true; slideDamping.disabled = true;
     slideMass.disabled = true; slideStiff.disabled = true;
     btnToggleSim.disabled = true; btnTacoma.disabled = true; btnSweep.disabled = true;
 }
-
 function enableUI() {
     slideFreq.disabled = false; slideAmp.disabled = false; slideDamping.disabled = false;
     slideMass.disabled = false; slideStiff.disabled = false;
     btnToggleSim.disabled = false; btnTacoma.disabled = false; btnSweep.disabled = false;
 }
-
 // Drawing function
 function drawBridge() {
     const W = canvas.width;
@@ -330,7 +310,6 @@ function drawBridge() {
         
         return;
     }
-
     // Normal Bridge
     // 1. Draw towers
     ctx.fillStyle = '#475569';
@@ -402,7 +381,6 @@ function drawBridge() {
         ctx.stroke();
     }
 }
-
 function triggerFailureUI() {
     failureOverlay.classList.remove('hidden');
     document.body.classList.add('failure-flash');
@@ -411,7 +389,6 @@ function triggerFailureUI() {
     btnToggleSim.className = 'btn primary';
     drawBridge(); // draw broken state
 }
-
 // Render Loop
 let lastTime = 0;
 function loop(timestamp) {
@@ -438,10 +415,22 @@ function loop(timestamp) {
     if (!isSweeping) {
         drawBridge();
     }
-
     // Update UI Stats
     statAmp.innerText = Math.abs(physics.x).toFixed(3);
-
+    
+    // Update Energy Bars
+    let scale = physics.F0 > 1000 ? MAX_ENERGY_SCALE * 2 : MAX_ENERGY_SCALE;
+    let p_ke = Math.min((physics.KE / scale) * 100, 100);
+    let p_pe = Math.min((physics.PE / scale) * 100, 100);
+    let p_tot = Math.min((physics.TotalE / scale) * 100, 100);
+    
+    barKE.style.width = p_ke + '%';
+    barPE.style.width = p_pe + '%';
+    barTotal.style.width = p_tot + '%';
+    
+    valKE.innerText = Math.round(physics.KE) + ' J';
+    valPE.innerText = Math.round(physics.PE) + ' J';
+    valTotal.innerText = Math.round(physics.TotalE) + ' J';
     
     // Update Time Chart
     if (isRunning && !isSweeping) {
@@ -450,10 +439,8 @@ function loop(timestamp) {
         arr.shift();
         timeChart.update();
     }
-
     requestAnimationFrame(loop);
 }
-
 // Init
 updateParamsFromUI();
 requestAnimationFrame(loop);
